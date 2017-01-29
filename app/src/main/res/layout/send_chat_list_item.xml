@@ -14,8 +14,8 @@
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:gravity="right"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="right">
 
         <TextView
             android:id="@+id/txt_send_msg"
@@ -31,15 +31,28 @@
             android:paddingTop="@dimen/chat_bubble_top_bottom_padding"
             android:textColor="@android:color/white" />
 
-        <ImageView
-            android:id="@+id/img_send_status"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="bottom"
-            android:background="@drawable/small_circle_back"
-            android:padding="2dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_read" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom">
+
+            <ImageView
+                android:id="@+id/img_msg"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/img_send_status"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="bottom|right"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/small_circle_back"
+                android:padding="2dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_read" />
+        </FrameLayout>
     </LinearLayout>
 
     <TextView

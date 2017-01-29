@@ -2,7 +2,9 @@ package com.shivam.chatapppractice.ui.activities;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,12 +16,17 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.miguelbcr.ui.rx_paparazzo2.RxPaparazzo;
 import com.miguelbcr.ui.rx_paparazzo2.entities.Response;
 import com.miguelbcr.ui.rx_paparazzo2.entities.size.CustomMaxSize;
@@ -30,8 +37,9 @@ import com.shivam.chatapppractice.model.Chat;
 import com.shivam.chatapppractice.model.RxFireBaseChildEvent;
 import com.shivam.chatapppractice.ui.adapters.ChatListAdapter;
 import com.shivam.chatapppractice.utils.AppUtils;
-import com.shivam.chatapppractice.utils.BaseActivity;
+import com.shivam.chatapppractice.utils.base.BaseActivity;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -66,10 +74,13 @@ public class ChatActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        String conversationId = getIntent().getStringExtra(AppUtils.CONVERSATION_ID);
+        reference = FirebaseDatabase.getInstance().getReference().child(AppUtils.APP_NAME)
+                .child(AppUtils.TABLE_CHATS).child(conversationId);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         mChatList.setLayoutManager(new LinearLayoutManager(this));
-        mChatListAdapter = new ChatListAdapter();
+        mChatListAdapter = new ChatListAdapter(this);
         mChatList.setAdapter(mChatListAdapter);
         mChatList.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -85,8 +96,7 @@ public class ChatActivity extends BaseActivity {
                 }
             }
         });
-        reference = FirebaseDatabase.getInstance().getReference().child("ChatAppPractice")
-                .child("ChatMessages");
+
         setUpFireBase();
     }
 
@@ -292,11 +302,75 @@ public class ChatActivity extends BaseActivity {
     }
 
     private void sendImages(List<String> filePaths) {
-
+        for (String filePath : filePaths) {
+            sendImage(filePath);
+        }
     }
 
-    private void sendImage(String filePath) {
+    private void sendImage(final String filePath) {
+        DisposableSubscriber disposableSubscriber = new DisposableSubscriber<String>() {
 
+            @Override
+            public void onNext(String s) {
+                System.out.println("URLL>>>" + s);
+                Chat chat = new Chat();
+                chat.setMessage(s);
+                chat.setTime(AppUtils.getCurrentTime());
+                chat.setMsgType(AppUtils.MSG_TYPE_IMG);
+                chat.setSendStatus(AppUtils.SEND_STATUS_SENT);
+                chat.setUserId(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                chat.setUserName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+                chat.setUserPic(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString());
+                chat.setChatId(reference.push().getKey());
+                reference.child(chat.getChatId()).setValue(chat);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+        Flowable.create(new FlowableOnSubscribe<String>() {
+            @Override
+            public void subscribe(final FlowableEmitter<String> e) throws Exception {
+                Uri file = Uri.fromFile(new File(filePath));
+                final StorageReference riversRef = FirebaseStorage.getInstance().getReference().child("images/" + file.getLastPathSegment());
+                final UploadTask uploadTask = riversRef.putFile(file);
+                final OnFailureListener failureListener = new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        e.onError(exception);
+                        e.onComplete();
+                    }
+                };
+                final OnSuccessListener successListener = new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        e.onNext(downloadUrl.toString());
+                        e.onComplete();
+                    }
+                };
+                uploadTask.addOnFailureListener(failureListener)
+                        .addOnSuccessListener(successListener);
+                e.setCancellable(new Cancellable() {
+                    @Override
+                    public void cancel() throws Exception {
+                        uploadTask.removeOnFailureListener(failureListener);
+                        uploadTask.removeOnSuccessListener(successListener);
+                    }
+                });
+            }
+        }, BackpressureStrategy.BUFFER)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(disposableSubscriber);
     }
 
     private boolean checkResultCode(int code) {
@@ -309,7 +383,6 @@ public class ChatActivity extends BaseActivity {
         }
         return code == RESULT_OK;
     }
-
 
     @Override
     protected void onDestroy() {

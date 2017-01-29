@@ -1,4 +1,4 @@
-package com.shivam.chatapppractice.utils;
+package com.shivam.chatapppractice.utils.base;
 
 import android.app.Application;
 

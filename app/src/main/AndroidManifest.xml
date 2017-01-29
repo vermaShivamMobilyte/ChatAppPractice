@@ -3,7 +3,7 @@
     package="com.shivam.chatapppractice">
 
     <application
-        android:name=".utils.BaseApplication"
+        android:name=".utils.base.BaseApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

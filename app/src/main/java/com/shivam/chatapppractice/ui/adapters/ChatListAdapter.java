@@ -1,5 +1,6 @@
 package com.shivam.chatapppractice.ui.adapters;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.shivam.chatapppractice.R;
 import com.shivam.chatapppractice.model.Chat;
@@ -28,11 +30,22 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private List<Chat> mList;
     private List<String> mKeys;
     private String senderId;
+    private Context context;
 
-    public ChatListAdapter() {
+    public ChatListAdapter(Context context) {
+        this.context = context;
         mKeys = new ArrayList<>();
         mList = new ArrayList<>();
         senderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (isFooter(position)) return AppUtils.TYPE_FOOTER;
+        Chat chat = mList.get(position);
+        if (senderId.trim().equals(chat.getUserId().trim())) {
+            return AppUtils.TYPE_SENDER;
+        } else return AppUtils.TYPE_RECEIVER;
     }
 
     @Override
@@ -56,7 +69,21 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (!isFooter(position)) {
             Chat chat = mList.get(position);
             if (holder instanceof SendChatListViewHolder) {
-                ((SendChatListViewHolder) holder).mSendMessage.setText(chat.getMessage());
+                ((SendChatListViewHolder) holder).mSendMessage.setVisibility(View.GONE);
+                ((SendChatListViewHolder) holder).mImgMessage.setVisibility(View.GONE);
+                switch (chat.getMsgType()) {
+                    case AppUtils.MSG_TYPE_TXT:
+                        ((SendChatListViewHolder) holder).mSendMessage.setVisibility(View.VISIBLE);
+                        ((SendChatListViewHolder) holder).mSendMessage.setText(chat.getMessage());
+                        break;
+                    case AppUtils.MSG_TYPE_IMG:
+                        ((SendChatListViewHolder) holder).mImgMessage.setVisibility(View.VISIBLE);
+                        Glide.with(context).load(chat.getMessage()).centerCrop().crossFade().into(((SendChatListViewHolder) holder).mImgMessage);
+                        break;
+                    case AppUtils.MSG_TYPE_VID:
+                        break;
+                }
+
                 ((SendChatListViewHolder) holder).mSendMessageTime.setText(AppUtils.getlocalTime(chat.getTime()));
                 ((SendChatListViewHolder) holder).mSendUserName.setText(chat.getUserName());
                 switch (chat.getSendStatus()) {
@@ -67,7 +94,6 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         ((SendChatListViewHolder) holder).mSendStatus.setImageResource(R.drawable.ic_received);
                         break;
                     case AppUtils.SEND_STATUS_READ:
-
                         ((SendChatListViewHolder) holder).mSendStatus.setImageResource(R.drawable.ic_read);
                         break;
                 }
@@ -77,14 +103,6 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 ((ReceiveChatListViewHolder) holder).mReceiveUserName.setText(chat.getUserName());
             }
         }
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (isFooter(position)) return AppUtils.TYPE_FOOTER;
-        Chat chat = mList.get(position);
-        if (senderId.trim().equals(chat.getUserId().trim())) return AppUtils.TYPE_SENDER;
-        else return AppUtils.TYPE_RECEIVER;
     }
 
     private boolean isFooter(int position) {
@@ -148,6 +166,8 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         TextView mSendMessageTime;
         @BindView(R.id.img_send_status)
         ImageView mSendStatus;
+        @BindView(R.id.img_msg)
+        ImageView mImgMessage;
 
         public SendChatListViewHolder(View itemView) {
             super(itemView);

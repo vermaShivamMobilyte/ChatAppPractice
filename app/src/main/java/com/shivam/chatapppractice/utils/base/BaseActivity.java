@@ -1,7 +1,10 @@
-package com.shivam.chatapppractice.utils;
+package com.shivam.chatapppractice.utils.base;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -15,7 +18,7 @@ import com.shivam.chatapppractice.R;
 
 public class BaseActivity extends AppCompatActivity {
 
-    protected final String TAG = "GoogleActivity";
+    protected final String TAG = "Chat App";
     public ProgressDialog mProgressDialog;
 
     public void showProgressDialog() {
@@ -56,5 +59,36 @@ public class BaseActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    protected void replaceFragment(Fragment fragment, boolean addToBackStack) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (addToBackStack) {
+            transaction.replace(R.id.activity_container, fragment).addToBackStack(fragment.getClass().getName());
+        } else {
+            transaction.replace(R.id.activity_container, fragment);
+        }
+        transaction.commit();
+    }
+
+    protected void showSnack(String message) {
+        try {
+            hideKeyboard();
+            Snackbar.make(getCurrentFocus(), message, Snackbar.LENGTH_LONG).show();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            showToast(message);
+        }
+    }
+
+    protected void showSnackWithButton(String message, String button, View.OnClickListener clickListener) {
+        try {
+            hideKeyboard();
+            Snackbar.make(getCurrentFocus(), message, Snackbar.LENGTH_INDEFINITE).setAction(button, clickListener).show();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            showToast(message);
+        }
+    }
+
 
 }

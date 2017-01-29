@@ -1,11 +1,8 @@
 package com.shivam.chatapppractice.utils;
 
-import com.shivam.chatapppractice.model.Chat;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.TimeZone;
 
 /**
@@ -24,6 +21,11 @@ public class AppUtils {
     public static final int TYPE_SENDER = 0;
     public static final int TYPE_RECEIVER = 1;
     public static final int TYPE_FOOTER = 5;
+    public static final String TABLE_USERS = "Users";
+    public static final String APP_NAME = "ChatApp";
+    public static final String TABLE_CHATS = "Chats";
+    public static final String USER_ID = "UserId";
+    public static final String CONVERSATION_ID = "ConversationID";
 
     public static long getCurrentTime() {
         return Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTimeInMillis();
