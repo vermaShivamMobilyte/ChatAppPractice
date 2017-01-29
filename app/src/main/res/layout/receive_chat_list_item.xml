@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <TextView
+        android:id="@+id/txt_receive_user_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp" />
+
+    <TextView
+        android:id="@+id/txt_receive_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/margin_for_offset_chat_bubble"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/receive_rounded_back"
+        android:gravity="center_vertical"
+        android:paddingBottom="@dimen/chat_bubble_top_bottom_padding"
+        android:paddingLeft="@dimen/chat_bubble_left_right_padding"
+        android:paddingRight="@dimen/chat_bubble_left_right_padding"
+        android:paddingTop="@dimen/chat_bubble_top_bottom_padding"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/txt_receive_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="2dp"
+        android:textSize="11sp" />
+</LinearLayout>
