@@ -67,6 +67,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         ((SendChatListViewHolder) holder).mSendStatus.setImageResource(R.drawable.ic_received);
                         break;
                     case AppUtils.SEND_STATUS_READ:
+
                         ((SendChatListViewHolder) holder).mSendStatus.setImageResource(R.drawable.ic_read);
                         break;
                 }
